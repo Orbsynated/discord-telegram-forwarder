@@ -1,0 +1,11 @@
+discord-token: test
+telegram-bot-token: test
+filter:
+  # discord server name
+  - disocrd-server-name-or-id: The Kings
+    # Is server name an ID or name (default: false)
+    server-id: false
+    # User Ids to accept messages
+    accept-users:
+      - 987654321
+      - 132456798
