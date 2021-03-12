@@ -11,15 +11,28 @@ pub struct Config {
     discord_token: String,
     #[serde(rename = "telegram-bot-token")]
     telegram_token: String,
-    filter: Vec<Filter>,
+    filter: Option<Vec<Filter>>,
+    
+    debug: bool,
+
+    #[serde(skip_serializing)]
+    config_path: Option<String>,
 }
 
 impl Config {
-    pub fn new(discord_token: String, telegram_token: String, filter: Vec<Filter>) -> Self {
+    pub fn new(
+        discord_token: String,
+        telegram_token: String,
+        filter: Option<Vec<Filter>>,
+        debug: bool,
+        config_path: Option<String>,
+    ) -> Self {
         Self {
             discord_token,
             telegram_token,
             filter,
+            debug,
+            config_path,
         }
     }
 
