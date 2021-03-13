@@ -11,6 +11,3 @@ Cargo.lock
 
 # Vscode local config ignore
 .vscode/
-
-# Dont commit example files again
-example.*
