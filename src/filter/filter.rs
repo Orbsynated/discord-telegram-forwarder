@@ -18,4 +18,19 @@ impl Filter {
             server_name,
         }
     }
+
+    /// Get a reference to the filter's server name.
+    pub fn server_name(&self) -> &String {
+        &self.server_name
+    }
+
+    /// Get a reference to the filter's accept users.
+    pub fn accept_users(&self) -> &Vec<u32> {
+        &self.accept_users
+    }
+
+    /// Get a reference to the filter's server id.
+    pub fn server_id(&self) -> &bool {
+        &self.server_id
+    }
 }

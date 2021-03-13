@@ -1,10 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-use self::filter::Filter;
-use serde::{Deserialize, Serialize};
+use crate::{filter::filter::Filter, utils::constants::TokenType};
 
-#[path = "../filter/filter.rs"]
-mod filter;
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     #[serde(rename = "discord-token")]
@@ -12,7 +10,7 @@ pub struct Config {
     #[serde(rename = "telegram-bot-token")]
     telegram_token: String,
     filter: Option<Vec<Filter>>,
-    
+
     debug: bool,
 
     #[serde(skip_serializing)]
@@ -38,7 +36,19 @@ impl Config {
 
     pub fn load_config(path: &str) -> Result<Config, Box<dyn std::error::Error>> {
         let file = File::open(path)?;
-        let yaml = serde_yaml::from_reader(file)?;
+        let yaml: Config = serde_yaml::from_reader(file)?;
         Ok(yaml)
+    }
+
+    pub fn get_token(&self, token_type: TokenType) -> &String {
+        match token_type {
+            TokenType::Discord => &self.discord_token,
+            TokenType::Telegram => &self.telegram_token,
+        }
+    }
+
+    /// Get a reference to the config's filter.
+    pub fn get_filter(&self) -> &Option<Vec<Filter>> {
+        &self.filter
     }
 }
