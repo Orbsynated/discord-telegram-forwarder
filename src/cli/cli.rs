@@ -1,7 +1,8 @@
-use clap::{crate_authors, crate_version, App, Arg};
 use crate::{config::config::Config, utils::constants};
+use clap::{crate_authors, crate_version, App, Arg};
+use crate::config::utils::VerbosityLevel;
 
-fn setup_args() -> Vec<Arg<'static, 'static>> {
+fn setup_args() -> [Arg<'static, 'static>; 4] {
     let config_arg = Arg::with_name("config")
         .short("c")
         .long("config")
@@ -28,11 +29,11 @@ fn setup_args() -> Vec<Arg<'static, 'static>> {
         .takes_value(true)
         .group("secrets");
 
-    vec![config_arg, debug_arg, discord_token, telegram_token]
+    [config_arg, debug_arg, discord_token, telegram_token]
 }
 
 pub fn init_config() -> Config {
-    let args = setup_args();
+    let args: [Arg; 4] = setup_args();
     let matches = App::new("Discord Telegram Forwarder")
         .version(crate_version!())
         .author(crate_authors!("\n"))
@@ -51,7 +52,7 @@ pub fn init_config() -> Config {
             String::from(discord_token),
             String::from(telegram_token),
             None,
-            is_debug,
+            VerbosityLevel(log::LevelFilter::Debug),
             None,
         )
     }

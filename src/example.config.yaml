@@ -1,6 +1,6 @@
 discord-token: test
 telegram-bot-token: test
-debug: false
+verbosity-level: DEBUG
 filter:
   # discord server name
   - disocrd-server-name-or-id: The Kings

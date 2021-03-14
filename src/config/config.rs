@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
+// use log::{debug, error, log_enabled, info};
 
 use crate::{filter::filter::Filter, utils::constants::TokenType};
+
+use super::utils::VerbosityLevel;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
@@ -9,12 +12,26 @@ pub struct Config {
     discord_token: String,
     #[serde(rename = "telegram-bot-token")]
     telegram_token: String,
+
     filter: Option<Vec<Filter>>,
 
-    debug: bool,
+    #[serde(rename = "verbosity-level")]
+    verbosity_level: VerbosityLevel,
 
     #[serde(skip_serializing)]
     config_path: Option<String>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            config_path: Some(String::default()),
+            discord_token: String::default(),
+            telegram_token: String::default(),
+            filter: None,
+            verbosity_level: VerbosityLevel(log::LevelFilter::Debug),
+        }
+    }
 }
 
 impl Config {
@@ -22,14 +39,14 @@ impl Config {
         discord_token: String,
         telegram_token: String,
         filter: Option<Vec<Filter>>,
-        debug: bool,
+        verbosity_level: VerbosityLevel,
         config_path: Option<String>,
     ) -> Self {
         Self {
             discord_token,
             telegram_token,
             filter,
-            debug,
+            verbosity_level,
             config_path,
         }
     }

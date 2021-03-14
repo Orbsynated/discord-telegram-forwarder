@@ -2,11 +2,14 @@ use cli::cli as cli_utils;
 use connector::connector::MessageHandler;
 use serenity::Client;
 use utils::constants::TokenType;
+use log::{debug, error, log_enabled, info, Level};
 mod config;
 mod utils;
 mod filter;
 mod connector;
 mod cli;
+mod telegram;
+
 
 #[tokio::main]
 async fn main() {
