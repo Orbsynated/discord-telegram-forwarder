@@ -1,8 +1,14 @@
-use std::{marker::PhantomData};
+use std::marker::PhantomData;
 
 use log::LevelFilter;
-use serde::{de::Visitor, Deserialize, Serialize};
-static LOG_LEVEL_NAMES: [&str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
+use log::{debug, error, info, log_enabled, Level};
+use serde::{
+    de::{Error, Visitor},
+    Deserialize, Serialize,
+};
+
+const LOG_LEVEL_NAMES: [&'static str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
+const DEFAULT_LEVEL: LevelFilter = LevelFilter::Info;
 
 #[derive(Debug, PartialEq)]
 pub struct VerbosityLevel(pub LevelFilter);
@@ -21,12 +27,15 @@ impl<'de> Deserialize<'de> for VerbosityLevel {
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_enum("VerbosityLevel", &LOG_LEVEL_NAMES, VerbosityLevelVisitor::new())
+        deserializer.deserialize_str(VerbosityLevelVisitor::new())
     }
 }
-
+///
+/// We use a different struct as a visitor and not VerbosityLevel because we don't want to create a new verbosity level struct every time
+///  We deserialize (even though we drop it right after)
 struct VerbosityLevelVisitor {
-    marker: PhantomData<fn() -> VerbosityLevel>,
+    // Using PhantomData so the compiler thinks VerbosityLevelVisitor owns VerbosityLevel but will actually always be empty
+    marker: PhantomData<VerbosityLevel>,
 }
 
 impl VerbosityLevelVisitor {
@@ -41,37 +50,25 @@ impl<'de> Visitor<'de> for VerbosityLevelVisitor {
     type Value = VerbosityLevel;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("Level filter enum")
+        write!(formatter, "A string containing verbosity level")
     }
 
-    fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-        A: serde::de::EnumAccess<'de>,
+        E: Error,
     {
-        let t: VerbosityLevel = data.variant().unwrap().0;
-        // let test = LOG_LEVEL_NAMES
-        //     .iter()
-        //     .position(|&name| eq_ignore_ascii_case(name, self.0.as_str()))
-        //     .map(|p| VerbosityLevel::from_usize(p).unwrap());
-
-            Ok(VerbosityLevel(LevelFilter::Debug))
-    }
-}
-pub fn eq_ignore_ascii_case(a: &str, b: &str) -> bool {
-    fn to_ascii_uppercase(c: u8) -> u8 {
-        if c >= b'a' && c <= b'z' {
-            c - b'a' + b'A'
-        } else {
-            c
+        match LOG_LEVEL_NAMES
+            .iter()
+            .position(|&name| name.eq_ignore_ascii_case(v))
+            // Set default verbosity level as INFO
+            .map(|p| VerbosityLevel::from_usize(p))
+            .unwrap_or(None)
+        {
+            Some(value) => Ok(VerbosityLevel(value)),
+            None => Err(Error::custom(
+                "Something went wrong with de-serializing verbosity level",
+            )),
         }
-    }
-
-    if a.len() == b.len() {
-        a.bytes()
-            .zip(b.bytes())
-            .all(|(a, b)| to_ascii_uppercase(a) == to_ascii_uppercase(b))
-    } else {
-        false
     }
 }
 

@@ -1,4 +1,4 @@
-use telegram_bot::{Api, CanSendMessage, CanStopPoll, ChatId};
+use telegram_bot::{Api, CanSendMessage, ChatId};
 
 struct TelegramBot {
     token: String,
