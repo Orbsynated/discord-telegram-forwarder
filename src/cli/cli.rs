@@ -1,6 +1,7 @@
 use crate::{config::config::Config, utils::constants};
 use clap::{crate_authors, crate_version, App, Arg};
-use crate::config::utils::VerbosityLevel;
+use constants::DEFAULT_LEVEL;
+use log::LevelFilter;
 
 fn setup_args() -> [Arg<'static, 'static>; 4] {
     let config_arg = Arg::with_name("config")
@@ -33,6 +34,8 @@ fn setup_args() -> [Arg<'static, 'static>; 4] {
 }
 
 pub fn init_config() -> Config {
+    let level: LevelFilter;
+    let config: Config;
     let args: [Arg; 4] = setup_args();
     let matches = App::new("Discord Telegram Forwarder")
         .version(crate_version!())
@@ -42,18 +45,25 @@ pub fn init_config() -> Config {
         .get_matches();
 
     if let Some(config_path) = matches.value_of("config") {
-        Config::load_config(config_path).unwrap()
+        config = Config::load_config(config_path).unwrap();
+        level = config.verbosity_level().to_owned();
     } else {
         let is_debug = matches.is_present("debug");
         let discord_token = matches.value_of(constants::DISCORD_TOKEN_NAME).unwrap();
         let telegram_token = matches.value_of(constants::DISCORD_TOKEN_NAME).unwrap();
+        level = match is_debug {
+            true => LevelFilter::Debug,
+            _ => DEFAULT_LEVEL,
+        };
 
-        Config::new(
-            String::from(discord_token),
-            String::from(telegram_token),
+        config = Config::new(
+            Some(String::from(discord_token)),
+            Some(String::from(telegram_token)),
             None,
-            VerbosityLevel(log::LevelFilter::Debug),
+            DEFAULT_LEVEL,
             None,
         )
     }
+    env_logger::builder().filter_level(level).init();
+    config
 }
