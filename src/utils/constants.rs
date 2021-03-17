@@ -7,6 +7,7 @@ pub const TELEGRAM_TOKEN_NAME: &str = "telegram.token";
 pub const DEFAULT_LEVEL: LevelFilter = log::LevelFilter::Info;
 pub const DEFAULT_LEVEL_FN: fn() -> LevelFilter = || DEFAULT_LEVEL;
 
+#[repr(usize)]
 pub enum TokenType {
     Discord,
     Telegram,
