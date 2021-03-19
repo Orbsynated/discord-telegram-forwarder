@@ -1,6 +1,6 @@
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
-use serenity::client::{validate_token, ClientError};
+use serenity::client::{validate_token};
 use serenity::prelude::SerenityError;
 use std::fs::File;
 // use log::{debug, error, log_enabled, info};

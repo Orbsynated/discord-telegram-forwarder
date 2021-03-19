@@ -1,4 +1,4 @@
-use log::log_enabled;
+use log::{error, log_enabled};
 use std::fmt::Debug;
 
 pub trait ErrorExtensions<T> {
@@ -15,7 +15,10 @@ where
         if log_enabled!(log::Level::Error) {
             match self {
                 Ok(d) => d,
-                Err(e) => unwrap_failed(msg, &e),
+                Err(e) => {
+                    error!("{} {:#?}", msg, e);
+                    unwrap_failed(msg, &e)
+                }
             }
         } else {
             return self.expect(msg);

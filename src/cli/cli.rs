@@ -3,6 +3,7 @@ use crate::{config::config::Config, utils::constants};
 use clap::{crate_authors, crate_version, App, Arg};
 use constants::DEFAULT_LEVEL;
 use log::LevelFilter;
+use crate::utils::extensions::ErrorExtensions;
 
 fn setup_args() -> [Arg<'static, 'static>; 4] {
     let config_arg = Arg::with_name("config")
@@ -46,7 +47,7 @@ pub fn init_config() -> Result<Config, Box<dyn std::error::Error>> {
         .get_matches();
 
     if let Some(config_path) = matches.value_of("config") {
-        config = Config::load_config(config_path).unwrap();
+        config = Config::load_config(config_path).expect_with_log("Error parsing yaml config");
         level = config.verbosity_level().to_owned();
     } else {
         let is_debug = matches.is_present("debug");

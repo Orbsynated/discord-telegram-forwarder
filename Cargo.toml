@@ -5,8 +5,6 @@ authors = ["Or <10655932+Orbsynated@users.noreply.github.com>"]
 repository = "https://github.com/Orbsynated/discord-telegram-forwarder/"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 clap = "2.33.3"
 env_logger = "0.8.3"
@@ -27,8 +25,10 @@ features = [
     "client",
     "gateway",
     "cache",
+    "collector",
     "http",
     "model",
+    "absolute_ratelimits",
     "utils",
     "rustls_backend",
 ]
