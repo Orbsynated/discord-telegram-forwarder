@@ -9,6 +9,6 @@ pub const DEFAULT_LEVEL_FN: fn() -> LevelFilter = || DEFAULT_LEVEL;
 
 #[repr(usize)]
 pub enum TokenType {
-    Discord,
-    Telegram,
+	Discord,
+	Telegram,
 }
