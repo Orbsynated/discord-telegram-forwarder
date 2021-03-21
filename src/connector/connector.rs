@@ -6,7 +6,8 @@ use serenity::{
 	model::{guild::GuildStatus, prelude::Ready},
 };
 
-use crate::{config::config::Config, utils::storage::CONFIG};
+use super::checker::is_discord_message_ok;
+use crate::utils::storage::CONFIG;
 use tokio::time::timeout;
 
 pub struct MessageHandler;
@@ -15,7 +16,12 @@ impl EventHandler for MessageHandler {
 	async fn message(&self, _ctx: Context, _new_message: Message) {
 		const TIMEOUT: tokio::time::Duration = tokio::time::Duration::from_secs(5);
 		match timeout(TIMEOUT, CONFIG.get().read()).await {
-			Ok(conf) => {}
+			Ok(conf) => {
+				let is_ok = is_discord_message_ok(&conf, &_new_message, &_ctx.cache).await;
+				if let Ok(ok) = is_ok {
+					//TODO: forward
+				}
+			}
 			Err(why) => warn!(
 				"Failed to read configuration, cannot know which messages to read so every message will be dropped \n
             {:?}",
