@@ -1,3 +1,6 @@
+**Being Actively developed.**
+**To see progress, go to the dev branch.**
+
 # discord-telegram-forwarder
 Forwards all message in discord to telegram, with filter options.
 
