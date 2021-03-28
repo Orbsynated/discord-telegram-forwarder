@@ -12,3 +12,5 @@ The use of a user account interacting with Discord's API, opposed to that of a b
 1. Implement forwarding messages to multiple telegram bots.
 2. Implement forwarding messages from multiple discord users/bots.
 3. Implement sending private messages from telegram to discord.
+4. Save telegram subscriptions locally.
+5. Implement selection of which modules to log

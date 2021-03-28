@@ -60,7 +60,7 @@ impl Config {
 	pub fn load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
 		let file = File::open(path)?;
 		let yaml: Config = serde_yaml::from_reader(file)?;
-		yaml.validate_tokens()?;
+		yaml.validate_discord_token()?;
 		Ok(yaml)
 	}
 
@@ -71,19 +71,17 @@ impl Config {
 		}
 	}
 
-	async fn is_guild_name_eq(
-		msg: &Message,
-		cache: &Cache,
-		guild_name: String,
-	) -> Result<bool, Box<dyn std::error::Error>> {
+	async fn is_guild_name_eq(msg: &Message, cache: &Cache, guild_name: String) -> Option<bool> {
 		let s = msg.guild_field(cache, |g| g.name.clone()).await?;
-		Ok(s.eq_ignore_ascii_case(&guild_name))
+		Some(s.eq_ignore_ascii_case(&guild_name))
 	}
 
-	fn validate_tokens(&self) -> Result<(), SerenityError> {
+	fn validate_discord_token(&self) -> Result<(), SerenityError> {
 		let validate = |token: TokenType| validate_token(self.get_token(token));
 
-		if let Err(error) = validate(TokenType::Discord).and(validate(TokenType::Telegram)) {
+
+
+		if let Err(error) = validate(TokenType::Discord) {
 			return Err(error);
 		}
 		Ok(())

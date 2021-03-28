@@ -1,8 +1,7 @@
-use crate::config::models::ConfigError;
 use crate::{config::config::Config, utils::constants};
-use clap::{crate_authors, crate_version, App, Arg};
+use clap::{App, Arg, crate_authors, crate_name, crate_version};
 use constants::DEFAULT_LEVEL;
-use log::LevelFilter;
+use log::{LevelFilter, error, warn};
 use crate::utils::extensions::ErrorExtensions;
 
 fn setup_args() -> [Arg<'static, 'static>; 4] {
@@ -35,7 +34,7 @@ fn setup_args() -> [Arg<'static, 'static>; 4] {
     [config_arg, debug_arg, discord_token, telegram_token]
 }
 
-pub fn init_config() -> Result<Config, Box<dyn std::error::Error>> {
+pub fn init_config(module_path: String) -> Result<Config, Box<dyn std::error::Error>> {
     let level: LevelFilter;
     let config: Config;
     let args: [Arg; 4] = setup_args();
@@ -66,11 +65,9 @@ pub fn init_config() -> Result<Config, Box<dyn std::error::Error>> {
             None,
         )
     }
-    env_logger::builder().filter_level(level).init();
-
-    if let Err(error) = config.validate_tokens() {
-        let error = format!("Tokens are not valid: {}", error);
-        return Err(Box::new(ConfigError(error)));
-    }
+    env_logger::builder()
+    .filter_module(&module_path, level)
+    .init();
+    
     Ok(config)
 }
