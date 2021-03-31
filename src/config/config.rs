@@ -1,7 +1,7 @@
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
-use serenity::{client::validate_token, model::channel::Message};
-use serenity::{client::Cache, prelude::SerenityError};
+use serenity::{client::validate_token};
+use serenity::{prelude::SerenityError};
 use std::fs::File;
 // use log::{debug, error, log_enabled, info};
 
@@ -69,11 +69,6 @@ impl Config {
 			TokenType::Discord => &self.discord_token,
 			TokenType::Telegram => &self.telegram_token,
 		}
-	}
-
-	async fn is_guild_name_eq(msg: &Message, cache: &Cache, guild_name: String) -> Option<bool> {
-		let s = msg.guild_field(cache, |g| g.name.clone()).await?;
-		Some(s.eq_ignore_ascii_case(&guild_name))
 	}
 
 	fn validate_discord_token(&self) -> Result<(), SerenityError> {

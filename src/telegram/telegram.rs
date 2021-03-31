@@ -14,6 +14,8 @@ impl TelegramBot {
 		Self { api: tg_client, chat_ids: RwLock::new(Vec::new()) }
 	}
 
+	
+	/// Listen to telegram subscriptions by using the "/subscribe" or "subscribe" command in telegram
 	pub async fn listen_to_subscriptions(&mut self) {
 		let mut stream = self.api.stream();
 		while let Some(update) = stream.next().await {
@@ -22,6 +24,7 @@ impl TelegramBot {
 					if let MessageKind::Text { ref data, .. } = message.kind {
 						if data == "subscribe" || data == "/subscribe" {
 							let chat_id = message.chat.id().to_string().parse::<i64>().unwrap();
+							// Add to subscription list only if is not already included
 							if !self.chat_ids.read().await.iter().any(|&i| i == chat_id) {
 								self.chat_ids.write().await.push(chat_id);
 							}
@@ -31,7 +34,7 @@ impl TelegramBot {
 			}
 		}
 	}
-
+	
 	pub async fn send_message_to(&self, msg: String, chat_id: i64) -> Result<(), Box<dyn std::error::Error>> {
 		let chat = ChatId::new(chat_id);
 		if let Ok(testing) = self.api.send(chat.text(msg)).await {}

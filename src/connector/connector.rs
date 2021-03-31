@@ -1,25 +1,27 @@
-use log::{debug, info, log_enabled, warn};
+use super::checker::is_discord_message_ok;
+use crate::utils::storage::CONFIG;
+use log::{debug, info, log_enabled};
 use serenity::client::{Context, EventHandler};
 use serenity::model::channel::Message;
 use serenity::{
 	async_trait,
 	model::{guild::GuildStatus, prelude::Ready},
 };
+use tokio::{
+	task::spawn,
+	time::{timeout, Duration},
+};
 
-use super::checker::is_discord_message_ok;
-use crate::utils::storage::CONFIG;
-use tokio::{task, time::timeout};
-
-const TIMEOUT: tokio::time::Duration = tokio::time::Duration::from_secs(5);
+const TIMEOUT: Duration = Duration::from_secs(5);
 
 pub struct MessageHandler;
 #[async_trait]
 impl EventHandler for MessageHandler {
 	async fn message(&self, _ctx: Context, _new_message: Message) {
-		tokio::task::spawn(async {
+		spawn(async {
 			let conf = timeout(TIMEOUT, CONFIG.get().read()).await.unwrap();
 			let is_ok = is_discord_message_ok(conf.clone(), _new_message, _ctx.cache).await;
-			if let Ok(result) = is_ok {
+			if is_ok {
 				//TODO: forward
 			}
 		});

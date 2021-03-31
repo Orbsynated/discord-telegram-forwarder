@@ -18,10 +18,7 @@ pub fn serialize_level_filter<S>(level: &LevelFilter, serializer: S) -> Result<S
 where
 	S: Serializer,
 {
-	match serializer.serialize_str(level.as_str()) {
-		Ok(output) => Ok(output),
-		Err(de_error) => Err(de_error),
-	}
+	serializer.serialize_str(level.as_str())
 }
 /// We use a different struct as a visitor and not LevelFilter because we don't want to create a new verbosity level struct every time
 /// We deserialize (even though we drop it right after)
@@ -55,10 +52,8 @@ impl<'de> Visitor<'de> for LevelFilterVisitor {
             .map(|p| level_filter_from_usize(p))
             .unwrap_or(None)
         {
-            Some(value) => {
-                Ok(value)
-            },
-            None => Err(Error::custom(format!("Something went wrong with de-serializing verbosity level, received {}, expected level filter enum value", value)
+            Some(value) => Ok(value),
+            None => Err(Error::custom(format!("Something went wrong with de-serializing verbosity level. Received: {} \n Expected: level filter enum value", value)
             )),
         }
 	}
