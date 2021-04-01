@@ -57,7 +57,7 @@ impl Config {
 		Self { discord_token, telegram_token, filter, verbosity_level, config_path }
 	}
 
-	pub fn load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+	pub fn try_load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
 		let file = File::open(path)?;
 		let yaml: Config = serde_yaml::from_reader(file)?;
 		yaml.validate_discord_token()?;

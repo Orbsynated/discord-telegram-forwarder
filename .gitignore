@@ -11,3 +11,6 @@ Cargo.lock
 
 # Vscode local config ignore
 .vscode/
+
+# Config file
+config.yaml

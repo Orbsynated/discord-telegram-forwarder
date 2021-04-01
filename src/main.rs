@@ -1,6 +1,6 @@
 use cli::cli as cli_utils;
 use connector::connector::MessageHandler;
-use log::{debug, error};
+use log::{error, info};
 use serenity::{
 	client::{bridge::gateway::GatewayIntents, EventHandler},
 	Client,
@@ -16,11 +16,11 @@ mod telegram;
 mod utils;
 use utils::extensions::ErrorExtensions;
 
+const MODULE_PATH: &str = module_path!();
 #[tokio::main]
 async fn main() {
-	debug!("Starting discord event forwarder");
-	let module_path = module_path!().to_string();
-	let config = RwLock::new(cli_utils::init_config(module_path).expect_with_log("Error parsing config"));
+	info!("Starting discord event forwarder");
+	let config = RwLock::new(cli_utils::init_config(MODULE_PATH).expect_with_log("Error parsing config"));
 	CONFIG.set(config);
 
 	let conf = CONFIG.get().read().await;
