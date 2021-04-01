@@ -1,7 +1,7 @@
 use tokio::sync::RwLock;
 
 use futures::StreamExt;
-use telegram_bot::{Api, CanSendMessage, ChatId, MessageKind, UpdateKind};
+use telegram_bot::{Api, CanSendMessage, ChatId, MessageKind, MessageOrChannelPost, UpdateKind};
 
 pub struct TelegramBot {
 	pub api: Api,
@@ -14,9 +14,8 @@ impl TelegramBot {
 		Self { api: tg_client, chat_ids: RwLock::new(Vec::new()) }
 	}
 
-	
 	/// Listen to telegram subscriptions by using the "/subscribe" or "subscribe" command in telegram
-	pub async fn listen_to_subscriptions(&mut self) {
+	pub async fn listen_to_subscriptions(&self) {
 		let mut stream = self.api.stream();
 		while let Some(update) = stream.next().await {
 			if let Ok(update) = update {
@@ -34,10 +33,17 @@ impl TelegramBot {
 			}
 		}
 	}
-	
-	pub async fn send_message_to(&self, msg: String, chat_id: i64) -> Result<(), Box<dyn std::error::Error>> {
-		let chat = ChatId::new(chat_id);
-		if let Ok(testing) = self.api.send(chat.text(msg)).await {}
+
+	pub async fn send_message_to_subscribers(&self, msg: &str) -> Result<(), Box<dyn std::error::Error>> {
+		for id in self.chat_ids.read().await.iter() {
+			self.send_message_to(msg, id).await?;
+		}
+		Ok(())
+	}
+
+	async fn send_message_to(&self, msg: &str, chat_id: &i64) -> Result<(), Box<dyn std::error::Error>> {
+		let chat = ChatId::new(chat_id.clone());
+		self.api.send(chat.text(msg)).await?;
 		Ok(())
 	}
 }

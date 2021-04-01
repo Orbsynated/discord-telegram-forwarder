@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use cli::cli as cli_utils;
 use connector::connector::MessageHandler;
 use log::{error, info};
@@ -6,7 +8,10 @@ use serenity::{
 	Client,
 };
 use telegram::telegram::TelegramBot;
-use utils::{constants::TokenType, storage::CONFIG};
+use utils::{
+	constants::TokenType,
+	storage::{CONFIG, TG_CLIENT},
+};
 mod cli;
 use tokio::sync::RwLock;
 mod config;
@@ -29,10 +34,12 @@ async fn main() {
 
 	let telegram_token = conf.get_token(TokenType::Telegram).to_owned();
 
-	let mut telegram_client = TelegramBot::init_telegram_bot(telegram_token);
+	let telegram_client = TelegramBot::init_telegram_bot(telegram_token);
 
-	tokio::task::spawn(async move {
-		telegram_client.listen_to_subscriptions().await;
+	TG_CLIENT.set(Arc::new(telegram_client));
+
+	tokio::task::spawn(async {
+		TG_CLIENT.get().listen_to_subscriptions().await;
 	});
 
 	let mut client = create_client(discord_token, MessageHandler).await.expect("Error creating client");

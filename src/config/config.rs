@@ -1,7 +1,8 @@
+use chrono_tz::Tz;
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
-use serenity::{client::validate_token};
-use serenity::{prelude::SerenityError};
+use serenity::client::validate_token;
+use serenity::prelude::SerenityError;
 use std::fs::File;
 // use log::{debug, error, log_enabled, info};
 
@@ -10,8 +11,8 @@ use crate::{
 	utils::constants::{TokenType, DEFAULT_LEVEL},
 };
 
-use super::lib::{deserialize_level_filter, serialize_level_filter};
-use crate::utils::constants::DEFAULT_LEVEL_FN;
+use super::lib::{deserialize_level_filter, deserialize_time_zone, serialize_level_filter, serialize_time_zone};
+use crate::utils::constants::{DEFAULT_LEVEL_FN, DEFAULT_TIMEZONE_FN};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -32,6 +33,14 @@ pub struct Config {
 
 	#[serde(skip_serializing)]
 	config_path: Option<String>,
+
+	#[serde(
+		rename = "time-zone",
+		serialize_with = "serialize_time_zone",
+		deserialize_with = "deserialize_time_zone",
+		default = "DEFAULT_TIMEZONE_FN"
+	)]
+	time_zone: Tz,
 }
 
 impl Default for Config {
@@ -42,6 +51,7 @@ impl Default for Config {
 			telegram_token: String::default(),
 			filter: None,
 			verbosity_level: DEFAULT_LEVEL,
+			time_zone: Tz::UTC,
 		}
 	}
 }
@@ -53,8 +63,9 @@ impl Config {
 		filter: Option<Vec<Filter>>,
 		verbosity_level: LevelFilter,
 		config_path: Option<String>,
+		time_zone: Tz,
 	) -> Self {
-		Self { discord_token, telegram_token, filter, verbosity_level, config_path }
+		Self { discord_token, telegram_token, filter, verbosity_level, config_path, time_zone }
 	}
 
 	pub fn try_load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
@@ -73,8 +84,6 @@ impl Config {
 
 	fn validate_discord_token(&self) -> Result<(), SerenityError> {
 		let validate = |token: TokenType| validate_token(self.get_token(token));
-
-
 
 		if let Err(error) = validate(TokenType::Discord) {
 			return Err(error);

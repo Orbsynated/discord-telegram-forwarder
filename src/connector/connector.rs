@@ -1,5 +1,5 @@
 use super::checker::is_discord_message_ok;
-use crate::utils::storage::CONFIG;
+use crate::utils::storage::{CONFIG, TG_CLIENT};
 use log::{debug, info, log_enabled};
 use serenity::client::{Context, EventHandler};
 use serenity::model::channel::Message;
@@ -14,14 +14,19 @@ use tokio::{
 
 const TIMEOUT: Duration = Duration::from_secs(5);
 
+
+
 pub struct MessageHandler;
+
 #[async_trait]
 impl EventHandler for MessageHandler {
 	async fn message(&self, _ctx: Context, _new_message: Message) {
+		// Create an async task to send telegram message to not block current thread
 		spawn(async {
 			let conf = timeout(TIMEOUT, CONFIG.get().read()).await.unwrap();
 			let is_ok = is_discord_message_ok(conf.clone(), _new_message, _ctx.cache).await;
 			if is_ok {
+				// TG_CLIENT.get().send_message_to_subscribers(_new_message)
 				//TODO: forward
 			}
 		});
@@ -36,6 +41,9 @@ impl EventHandler for MessageHandler {
 	}
 }
 
+impl MessageHandler {
+	
+}
 fn print_guild_names(_data_about_bot: Ready) {
 	let guild_names: Vec<String> = _data_about_bot
 		.guilds

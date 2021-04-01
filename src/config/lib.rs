@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use super::{debug, LevelFilter};
+use chrono_tz::Tz;
 use serde::{
 	de::{Error, Visitor},
 	Deserializer, Serializer,
@@ -67,5 +68,52 @@ fn level_filter_from_usize(u: usize) -> Option<LevelFilter> {
 		4 => Some(LevelFilter::Debug),
 		5 => Some(LevelFilter::Trace),
 		_ => None,
+	}
+}
+
+struct TimeZoneVisitor {
+	marker: PhantomData<Tz>,
+}
+
+pub fn deserialize_time_zone<'de, D>(deserializer: D) -> Result<Tz, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	deserializer.deserialize_str(TimeZoneVisitor::new())
+}
+
+pub fn serialize_time_zone<S>(level: &Tz, serializer: S) -> Result<S::Ok, S::Error>
+where
+	S: Serializer,
+{
+	serializer.serialize_str(level.name())
+}
+
+impl TimeZoneVisitor {
+	fn new() -> Self {
+		TimeZoneVisitor { marker: PhantomData }
+	}
+}
+
+impl<'de> Visitor<'de> for TimeZoneVisitor {
+	type Value = Tz;
+
+	fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(formatter, "A string containing time zone enum value")
+	}
+
+	fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+	where
+		E: Error,
+	{
+		debug!("Trying to de-serialize level filter");
+		let time_zone = value.parse::<Tz>();
+		match time_zone {
+			Ok(tz) => Ok(tz),
+			Err(_) => Err(Error::custom(format!(
+				"Something went wrong with de-serializing time zone. Received: {} \n Expected: time zone enum value",
+				value
+			))),
+		}
 	}
 }

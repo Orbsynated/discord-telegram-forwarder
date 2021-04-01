@@ -1,5 +1,6 @@
 use crate::utils::extensions::ErrorExtensions;
 use crate::{config::config::Config, utils::constants};
+use chrono_tz::Tz;
 use clap::{crate_authors, crate_version, App, Arg};
 use constants::{DEFAULT_CONFIG_FILE_NAME, DEFAULT_LEVEL};
 use log::LevelFilter;
@@ -66,7 +67,7 @@ pub fn init_config(main_module_path: &'static str) -> Result<Config, Box<dyn std
 				_ => DEFAULT_LEVEL,
 			};
 
-			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, None)
+			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, None, Tz::UTC)
 		}
 	}
 	env_logger::builder().filter_module(&main_module_path, config.verbosity_level().clone()).init();
