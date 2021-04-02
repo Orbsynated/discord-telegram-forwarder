@@ -1,7 +1,8 @@
+use log::error;
 use tokio::sync::RwLock;
 
 use futures::StreamExt;
-use telegram_bot::{Api, CanSendMessage, ChatId, MessageKind, MessageOrChannelPost, UpdateKind};
+use telegram_bot::{Api, CanSendMessage, ChatId, MessageKind, UpdateKind};
 
 pub struct TelegramBot {
 	pub api: Api,
@@ -34,16 +35,17 @@ impl TelegramBot {
 		}
 	}
 
-	pub async fn send_message_to_subscribers(&self, msg: &str) -> Result<(), Box<dyn std::error::Error>> {
+	pub async fn send_message_to_subscribers(&self, msg: String){
 		for id in self.chat_ids.read().await.iter() {
-			self.send_message_to(msg, id).await?;
+			self.send_message_to(&msg, id).await;
 		}
-		Ok(())
 	}
 
-	async fn send_message_to(&self, msg: &str, chat_id: &i64) -> Result<(), Box<dyn std::error::Error>> {
+	async fn send_message_to(&self, msg: &String, chat_id: &i64) {
 		let chat = ChatId::new(chat_id.clone());
-		self.api.send(chat.text(msg)).await?;
-		Ok(())
+		let res = self.api.send(chat.text(msg)).await;
+		if let Err(err) = res {
+			error!("Error sending a message to telegram api: {}", err);
+		}
 	}
 }

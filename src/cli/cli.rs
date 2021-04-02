@@ -52,8 +52,7 @@ pub fn init_config(main_module_path: &'static str) -> Result<Config, Box<dyn std
 		// Config path is defined in arguments
 		config = Config::try_load_config(config_path).expect_with_log("Error parsing yaml config");
 	} else {
-		let mut default_path = current_dir().unwrap();
-		default_path.push(DEFAULT_CONFIG_FILE_NAME);
+		let default_path = current_dir().unwrap().join(DEFAULT_CONFIG_FILE_NAME);
 
 		// Try to get config.yaml from executable folder
 		if let Ok(conf) = Config::try_load_config(default_path.to_str().unwrap()) {
@@ -67,7 +66,7 @@ pub fn init_config(main_module_path: &'static str) -> Result<Config, Box<dyn std
 				_ => DEFAULT_LEVEL,
 			};
 
-			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, None, Tz::UTC)
+			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, Tz::UTC)
 		}
 	}
 	env_logger::builder().filter_module(&main_module_path, config.verbosity_level().clone()).init();

@@ -1,8 +1,7 @@
 use chrono_tz::Tz;
-use log::LevelFilter;
+use log::{LevelFilter};
 use serde::{Deserialize, Serialize};
 use serenity::client::validate_token;
-use serenity::prelude::SerenityError;
 use std::fs::File;
 // use log::{debug, error, log_enabled, info};
 
@@ -31,9 +30,6 @@ pub struct Config {
 	)]
 	verbosity_level: LevelFilter,
 
-	#[serde(skip_serializing)]
-	config_path: Option<String>,
-
 	#[serde(
 		rename = "time-zone",
 		serialize_with = "serialize_time_zone",
@@ -46,7 +42,6 @@ pub struct Config {
 impl Default for Config {
 	fn default() -> Self {
 		Self {
-			config_path: None,
 			discord_token: String::default(),
 			telegram_token: String::default(),
 			filter: None,
@@ -62,16 +57,16 @@ impl Config {
 		telegram_token: String,
 		filter: Option<Vec<Filter>>,
 		verbosity_level: LevelFilter,
-		config_path: Option<String>,
 		time_zone: Tz,
 	) -> Self {
-		Self { discord_token, telegram_token, filter, verbosity_level, config_path, time_zone }
+		Self { discord_token, telegram_token, filter, verbosity_level, time_zone }
 	}
 
 	pub fn try_load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
 		let file = File::open(path)?;
 		let yaml: Config = serde_yaml::from_reader(file)?;
-		yaml.validate_discord_token()?;
+		// Will panic if discord token is invalid
+		yaml.validate_discord_token();
 		Ok(yaml)
 	}
 
@@ -82,17 +77,20 @@ impl Config {
 		}
 	}
 
-	fn validate_discord_token(&self) -> Result<(), SerenityError> {
-		let validate = |token: TokenType| validate_token(self.get_token(token));
-
-		if let Err(error) = validate(TokenType::Discord) {
-			return Err(error);
+	fn validate_discord_token(&self) {
+		let res = validate_token(self.get_token(TokenType::Discord));
+		if let Err(_) = res {
+			panic!("Invalid discord token provided");
 		}
-		Ok(())
 	}
 
 	/// Get a reference to the config's verbosity level.
 	pub fn verbosity_level(&self) -> &LevelFilter {
 		&self.verbosity_level
+	}
+
+	/// Get a reference to the config's time zone.
+	pub fn time_zone(&self) -> &Tz {
+		&self.time_zone
 	}
 }

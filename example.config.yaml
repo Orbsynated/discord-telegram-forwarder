@@ -1,9 +1,12 @@
 discord-token: test
 telegram-bot-token: test
+# Default is Info
 verbosity-level: DEBUG
+
 # Timezone format is from the tz database. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 # Look for the 'TZ database name' column
-time-zone: America/New_York
+# Default is UTC
+time-zone: UTC
 filter:
   # discord server name
   - disocrd-server-name-or-id: The Kings

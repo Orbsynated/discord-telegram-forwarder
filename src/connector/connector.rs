@@ -1,36 +1,23 @@
-use super::checker::is_discord_message_ok;
+use super::{checker::is_discord_message_ok, lib::format_message_to_telegram};
 use crate::utils::storage::{CONFIG, TG_CLIENT};
-use log::{debug, info, log_enabled};
-use serenity::client::{Context, EventHandler};
-use serenity::model::channel::Message;
+use log::{debug, error, info, log_enabled};
+use serenity::{http::CacheHttp, model::{channel::Message, id::GuildId}};
 use serenity::{
 	async_trait,
 	model::{guild::GuildStatus, prelude::Ready},
 };
-use tokio::{
-	task::spawn,
-	time::{timeout, Duration},
+use serenity::{
+	client::{Context, EventHandler},
+	model::guild::Guild,
 };
+use tokio::time::{timeout, Duration};
 
 const TIMEOUT: Duration = Duration::from_secs(5);
-
-
 
 pub struct MessageHandler;
 
 #[async_trait]
 impl EventHandler for MessageHandler {
-	async fn message(&self, _ctx: Context, _new_message: Message) {
-		// Create an async task to send telegram message to not block current thread
-		spawn(async {
-			let conf = timeout(TIMEOUT, CONFIG.get().read()).await.unwrap();
-			let is_ok = is_discord_message_ok(conf.clone(), _new_message, _ctx.cache).await;
-			if is_ok {
-				// TG_CLIENT.get().send_message_to_subscribers(_new_message)
-				//TODO: forward
-			}
-		});
-	}
 
 	async fn ready(&self, _ctx: Context, _data_about_bot: Ready) {
 		info!("Forwarder is ready for messages");
@@ -39,11 +26,26 @@ impl EventHandler for MessageHandler {
 			print_guild_names(_data_about_bot);
 		}
 	}
+
+
+	async fn message(&self, _ctx: Context, _new_message: Message) {
+		let _test_guild = _new_message.guild(&_ctx.cache).await.unwrap();
+		let conf = timeout(TIMEOUT, CONFIG.get().read()).await.unwrap();
+		// Check if message matches the filter in config
+		let is_ok = is_discord_message_ok(&conf, &_new_message, &_ctx.cache).await;
+		if is_ok {
+			let guild_name_map = |guild: &Guild| guild.name.clone();
+			let guild_name = _new_message.guild_field(&_ctx.cache, guild_name_map).await;
+			if let Some(name) = guild_name {
+				let msg = format_message_to_telegram(_new_message, name, conf.time_zone());
+				TG_CLIENT.get().send_message_to_subscribers(msg).await;
+			} else {
+				error!("Could not get discord server name from message id: {}", _new_message.id.0);
+			}
+		}
+	}
 }
 
-impl MessageHandler {
-	
-}
 fn print_guild_names(_data_about_bot: Ready) {
 	let guild_names: Vec<String> = _data_about_bot
 		.guilds
