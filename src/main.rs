@@ -42,18 +42,13 @@ async fn main() {
 		TG_CLIENT.get().listen_to_subscriptions().await;
 	});
 
-	let mut client = create_client(discord_token, MessageHandler).await.expect("Error creating discord client");
+	let mut client = Client::builder(discord_token)
+		.intents(GatewayIntents::GUILD_MESSAGES)
+		.event_handler(MessageHandler)
+		.await
+		.unwrap();
 
 	if let Err(why) = client.start().await {
 		error!("An error occurred while running the client: {:?}", why);
 	}
-}
-
-async fn create_client<H: EventHandler + 'static>(
-	token: String,
-	event_handler: H,
-) -> Result<Client, Box<dyn std::error::Error>> {
-	let client: Client =
-		Client::builder(token).intents(GatewayIntents::GUILD_MESSAGES).event_handler(event_handler).await?;
-	Ok(client)
 }
