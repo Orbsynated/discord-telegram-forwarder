@@ -9,9 +9,9 @@ verbosity-level: DEBUG
 time-zone: UTC
 filter:
   # discord server name
-  - disocrd-server-name-or-id: The Kings
-    # Is server name an ID or name (default: false)
-    server-id: false
+  - discord-server-id: 1234
+    # Due to discord api limitation, server name cannot be fetched if self-bots are used
+    discord-server-name: The Kings
     # User Ids to accept messages
     accept-users:
       - 987654321

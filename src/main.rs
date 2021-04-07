@@ -38,9 +38,9 @@ async fn main() {
 
 	TG_CLIENT.set(Arc::new(telegram_client));
 
-	tokio::task::spawn(async {
-		TG_CLIENT.get().listen_to_subscriptions().await;
-	});
+	// tokio::task::spawn(async {
+	// 	TG_CLIENT.get().listen_to_subscriptions().await;
+	// });
 
 	let mut client = Client::builder(discord_token)
 		.intents(GatewayIntents::GUILD_MESSAGES)

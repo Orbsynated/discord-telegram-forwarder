@@ -2,16 +2,11 @@ use chrono::TimeZone;
 use chrono_tz::Tz;
 use serenity::model::channel::Message;
 
-pub fn format_message_to_telegram(msg: Message, guild_name: String, time_zone: &Tz) -> String {
+pub fn format_message_to_telegram(msg: Message, guild_name: &String, time_zone: &Tz) -> String {
 	let converted_date = time_zone.from_utc_datetime(&msg.timestamp.naive_utc());
 
 	format!(
-		"
-        Server Name: {} \n
-        Author: {} \n
-        Time and Date: {} \n
-        Content: {}
-        ",
+		"Server Name: {} \nAuthor: {} \nTime and Date: {} \nContent: {}\n",
 		guild_name,
 		msg.author.name,
 		converted_date.to_rfc2822(),
