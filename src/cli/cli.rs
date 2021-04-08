@@ -66,10 +66,10 @@ pub fn init_config(main_module_path: &'static str) -> Result<Config, Box<dyn std
 				_ => DEFAULT_LEVEL,
 			};
 
-			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, Tz::UTC)
+			config = Config::new(String::from(discord_token), String::from(telegram_token), None, level, Tz::UTC, None)
 		}
 	}
-	env_logger::builder().filter_module(&main_module_path, config.verbosity_level().clone()).init();
+	env_logger::builder().filter_module(&main_module_path, config.get_verbosity_level().clone()).init();
 
 	Ok(config)
 }

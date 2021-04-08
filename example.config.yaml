@@ -7,11 +7,15 @@ verbosity-level: DEBUG
 # Look for the 'TZ database name' column
 # Default is UTC
 time-zone: UTC
+
+# Due to discord api limitation, server names cannot be fetched if self-bots are used (only server ids)
+# If no server names are defined, forwarded messages 'server name' field will be shown as its id.
+servers:
+  - discord-server-id: 1234
+    discord-server-name: The Kings
 filter:
   # discord server name
   - discord-server-id: 1234
-    # Due to discord api limitation, server name cannot be fetched if self-bots are used
-    discord-server-name: The Kings
     # User Ids to accept messages
     accept-users:
       - 987654321

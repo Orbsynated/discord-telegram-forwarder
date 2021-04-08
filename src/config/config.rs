@@ -1,5 +1,5 @@
 use chrono_tz::Tz;
-use log::{LevelFilter};
+use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 use serenity::client::validate_token;
 use std::fs::File;
@@ -20,7 +20,8 @@ pub struct Config {
 	#[serde(rename = "telegram-bot-token", default)]
 	telegram_token: String,
 
-	pub filter: Option<Vec<Filter>>,
+	#[serde(default)]
+	filter: Option<Vec<Filter>>,
 
 	#[serde(
 		rename = "verbosity-level",
@@ -37,6 +38,9 @@ pub struct Config {
 		default = "DEFAULT_TIMEZONE_FN"
 	)]
 	time_zone: Tz,
+
+	#[serde(default)]
+	servers: Option<Vec<(u64, String)>>,
 }
 
 impl Default for Config {
@@ -47,6 +51,7 @@ impl Default for Config {
 			filter: None,
 			verbosity_level: DEFAULT_LEVEL,
 			time_zone: Tz::UTC,
+			servers: None,
 		}
 	}
 }
@@ -58,8 +63,9 @@ impl Config {
 		filter: Option<Vec<Filter>>,
 		verbosity_level: LevelFilter,
 		time_zone: Tz,
+		servers: Option<Vec<(u64, String)>>,
 	) -> Self {
-		Self { discord_token, telegram_token, filter, verbosity_level, time_zone }
+		Self { discord_token, telegram_token, filter, verbosity_level, time_zone, servers }
 	}
 
 	pub fn try_load_config(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
@@ -85,12 +91,22 @@ impl Config {
 	}
 
 	/// Get a reference to the config's verbosity level.
-	pub fn verbosity_level(&self) -> &LevelFilter {
+	pub fn get_verbosity_level(&self) -> &LevelFilter {
 		&self.verbosity_level
 	}
 
 	/// Get a reference to the config's time zone.
-	pub fn time_zone(&self) -> &Tz {
+	pub fn get_time_zone(&self) -> &Tz {
 		&self.time_zone
+	}
+
+	/// Get a reference to the config's filter.
+	pub fn get_filter(&self) -> &Option<Vec<Filter>> {
+		&self.filter
+	}
+
+	/// Get a reference to the config's servers.
+	pub fn get_servers(&self) -> &Option<Vec<(u64, String)>> {
+		&self.servers
 	}
 }
